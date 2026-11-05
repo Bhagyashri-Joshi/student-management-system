@@ -1,0 +1,28 @@
+// MySQL connection pool (mysql2/promise). Credentials come from .env
+require('dotenv').config();
+const mysql = require('mysql2/promise');
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'student_management',
+  port: Number(process.env.DB_PORT) || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  dateStrings: true, // return DATE columns as 'YYYY-MM-DD' strings (no timezone shifts)
+});
+
+// Check the connection at startup so problems are visible immediately
+async function testConnection() {
+  try {
+    const conn = await pool.getConnection();
+    conn.release();
+    console.log('MySQL connected successfully');
+  } catch (err) {
+    console.error('MySQL connection failed:', err.message);
+    console.error('Check your backend/.env file and make sure MySQL is running.');
+  }
+}
+
+module.exports = { pool, testConnection };
